@@ -45,8 +45,7 @@ function makeSampleData(j=10) {
 
 function getAllKeys(value) {
   let dataArray = []
-  let new_data = []
-  let keystream = new Promise(function(resolve, reject){
+  return new Promise(function(resolve, reject){
     db.createReadStream()
       .on('data', function (data) {
         dataArray.push(data.key)
@@ -58,14 +57,6 @@ function getAllKeys(value) {
         resolve(dataArray);
       });
   });
-
-  keystream.then(function(data){
-    console.log( 'The db currently contains: \n\n');
-    console.log(data);
-    new_data = JSON.parse(JSON.stringify(data));
-  });
-
-  return new_data;
 };
 
 function getAllData(value) {

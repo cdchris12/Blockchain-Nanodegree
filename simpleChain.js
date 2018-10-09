@@ -55,8 +55,8 @@ class Blockchain{
   }
 
   // Get block height
-   getBlockHeight(ret=false){
-    let keys = backend.getAllKeys()
+  async getBlockHeight(ret=false){
+    let keys = await backend.getAllKeys()
 
     if (ret) {
       return keys.length
