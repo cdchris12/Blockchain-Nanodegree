@@ -61,7 +61,7 @@ function getAllKeys(value) {
 
 function getAllData(value) {
   let obj = {}
-  let datastream = new Promise(function(resolve, reject){
+  return new Promise(function(resolve, reject){
     db.createReadStream()
       .on('data', function (data) {
         obj[data.key] = data.value;
@@ -72,12 +72,6 @@ function getAllData(value) {
       .on('close', function () {
         resolve(obj);
       });
-  });
-
-  datastream.then(function(obj){
-    console.log( 'The db currently contains: \n\n');
-    console.log(obj);
-    return obj;
   });
 };
 // End testing data block

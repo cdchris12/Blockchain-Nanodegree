@@ -30,6 +30,8 @@ class Blockchain{
     // We can easily check for a genesis block by checking the BlockHeight.
     // If it is >0, we can safely assume there is a genesis block.
     let Height = this.getBlockHeight(true);
+    console.log('Check');
+    console.log(Height);
     if (Height == 0) {
       this.addBlock(new Block("First block in the chain - Genesis block"));
     }
@@ -56,14 +58,20 @@ class Blockchain{
 
   // Get block height
   async getBlockHeight(ret=false){
-    let keys = await backend.getAllKeys()
+    let keys = await backend.getAllKeys();
 
     if (ret) {
-      return keys.length
+      return keys.length;
     }
     else {
-      console.log(keys.length)
+      console.log(keys.length);
     };
+  }
+
+  async getChain(ret=false){
+    let obj = await backend.getAllData();
+    console.log( 'The db currently contains: \n\n');
+    console.log(obj);
   }
 
   // get block
