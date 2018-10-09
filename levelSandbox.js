@@ -2,27 +2,22 @@
 |  Learn more: level: https://github.com/Level/level     |
 |  =============================================================*/
 
-const level = require('level');
+const level = require('level')
 const chainDB = './chaindata';
 const db = level(chainDB);
 
 // Add data to levelDB with key/value pair
 function addData(key,value){
-  db.put(key, value, function(err) {
-    if (err) return console.log('Block ' + key + ' submission failed', err);
-  })
+  return db.put(key, value)
 };
 
 // Get data from levelDB with key
 function getData(key){
-  db.get(key, function(err, value) {
-    if (err) return console.log('Not found!', err);
-    console.log('Value = ' + value);
-  })
+  return db.get(key)
 };
 
 // Clear all data in levelDB
-function resetWorld() {
+async function resetWorld() {
   getAllKeys().then(function(keys){
     for (var key in keys) {
       console.log('Removing block #' + key);
@@ -35,18 +30,18 @@ function resetWorld() {
 };
 
 // Generate test data
-function makeSampleData(j=10) {
+async function makeSampleData(j=10) {
   for (var i=0; i<j; i++) {    
     console.log('Block #' + i);
-    addData(i, new Date().getTime().toString());
+    await addData(i, new Date().getTime().toString());
   }
   console.log('Finished generating test data!!');
+  return
 };
 
 function getAllKeys(value) {
   let dataArray = []
-  let new_data = []
-  let keystream = new Promise(function(resolve, reject){
+  return new Promise(function(resolve, reject){
     db.createReadStream()
       .on('data', function (data) {
         dataArray.push(data.key)
@@ -58,19 +53,11 @@ function getAllKeys(value) {
         resolve(dataArray);
       });
   });
-
-  keystream.then(function(data){
-    console.log( 'The db currently contains: \n\n');
-    console.log(data);
-    new_data = JSON.parse(JSON.stringify(data));
-  });
-
-  return new_data;
 };
 
 function getAllData(value) {
   let obj = {}
-  let datastream = new Promise(function(resolve, reject){
+  return new Promise(function(resolve, reject){
     db.createReadStream()
       .on('data', function (data) {
         obj[data.key] = data.value;
@@ -81,12 +68,6 @@ function getAllData(value) {
       .on('close', function () {
         resolve(obj);
       });
-  });
-
-  datastream.then(function(obj){
-    console.log( 'The db currently contains: \n\n');
-    console.log(obj);
-    return obj;
   });
 };
 // End testing data block
