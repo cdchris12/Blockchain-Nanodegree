@@ -34,8 +34,8 @@ class Blockchain{
   // Initialize a new Blockchain object
   async init(){
     let Height = await this.getBlockHeight(true);
-    if (Height == 0) {
-      this.addBlock(new Block("First block in the chain - Genesis block"));
+    if (Height !> 0) {
+      await this.addBlock(new Block("First block in the chain - Genesis block"));
     } else {
       console.log(Height);
     }
