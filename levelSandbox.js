@@ -16,6 +16,11 @@ function getData(key){
   return db.get(key)
 };
 
+// Remove specific key from leveDB
+function rmData(key){
+  return db.del(key)
+};
+
 // Clear all data in levelDB
 async function resetWorld() {
   getAllKeys().then(function(keys){
@@ -73,7 +78,7 @@ function getAllData(value) {
 // End testing data block
 
 // Setup functions that should be exported
-module.exports = { addData, getData, resetWorld, makeSampleData, getAllKeys, getAllData }
+module.exports = { addData, getData, rmData, resetWorld, makeSampleData, getAllKeys, getAllData }
 
 /*
 // Add data to levelDB with value

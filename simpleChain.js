@@ -97,6 +97,15 @@ class Blockchain{
     }
   }
 
+  async modifyBlocks(arr=[2,4,7]){
+    for (var i = 0; i < arr.length; i++) {
+      let oldBlock = await this.getBlock(arr[i]);
+      oldBlock.data = 'induced chain error';
+      await backend.rmData(arr[i]);
+      await backend.addData(arr[i], JSON.stringify(oldBlock));
+    }
+  }
+
   // validate block
   async validateBlock(blockHeight){
     // get block object
