@@ -46,12 +46,13 @@ class Blockchain{
     let Height = await this.getBlockHeight(true);
 
     // Block height
-    newBlock.height = Height;
+    newBlock.height = Height+1;
     // UTC timestamp
     newBlock.time = new Date().getTime().toString().slice(0,-3);
     // previous block hash
     if(newBlock.height>0){
-      newBlock.previousBlockHash = await this.getBlock(newBlock.height -1).hash;
+      let tmpBlock = await this.getBlock(newBlock.height -1);
+      newBlock.previousBlockHash = tmpBlock.hash;
     }
     // Block hash with SHA256 using newBlock and converting to a string
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
@@ -63,13 +64,14 @@ class Blockchain{
 
   // Get block height
   async getBlockHeight(ret=false){
+    let val = 0;
     let keys = await backend.getAllKeys();
+    val = keys.length-1;
 
     if (ret) {
-      return keys.length;
-    }
-    else {
-      console.log(keys.length);
+      return val;
+    } else {
+      console.log(val);
     };
   }
 
@@ -84,10 +86,8 @@ class Blockchain{
 
   // get block
   async getBlock(blockHeight){
-    // return object as a single string
-    //console.log(blockHeight);
+    // return object as a JSON blob
     let value = await backend.getData(blockHeight);
-    //console.log(value)
     return JSON.parse(value);
   }
 
@@ -131,16 +131,24 @@ class Blockchain{
     let Height = await this.getBlockHeight(true)
 
     let errorLog = [];
-    for (var i = 0; i < Height-1; i++) {
+    for (var i = 0; i < Height; i++) {
       // validate block
-      if (! await this.validateBlock(i))errorLog.push(i);
-      // compare blocks hash link
-      let blockHash = await this.getBlock(i).hash;
-      let previousHash = await this.getBlock(i+1).previousBlockHash;
+      if (! await this.validateBlock(i)) errorLog.push(i);
+
+      // compare blocks hash links
+      let tmpBlock = await this.getBlock(i);
+      let blockHash = tmpBlock.hash;
+      let tmpBlock2 = await this.getBlock(i+1);
+      let previousHash = tmpBlock2.previousBlockHash;
       if (blockHash!==previousHash) {
         errorLog.push(i);
       }
     }
+
+    // Cover testing the last block in the chain
+    if (! await this.validateBlock(Height)) errorLog.push(Height);
+
+    // Print out the error log
     if (errorLog.length>0) {
       console.log('Block errors = ' + errorLog.length);
       console.log('Blocks: '+errorLog);
