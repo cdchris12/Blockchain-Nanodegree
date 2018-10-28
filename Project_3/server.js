@@ -53,7 +53,7 @@ server.route({
 
         let height = await blockchain.getBlockHeight();
 
-        const response = height;
+        const response = h.response(height);
         response.type('text/html; charset=utf-8');
         response.header('Creator', 'cdchris12');
         response.code(200);
@@ -77,7 +77,7 @@ server.route({
 
         await backend.resetWorld()
 
-        const response = "Blockchain has been reset!";
+        const response = h.response("Blockchain has been reset!");
         response.type('text/html; charset=utf-8');
         response.header('Creator', 'cdchris12');
         response.code(200);
@@ -101,7 +101,7 @@ server.route({
 
         await blockchain.generateBlocks();
 
-        const response = "Example data has been generated for the blockchain!";
+        const response = h.response("Example data has been generated for the blockchain!");
         response.type('text/html; charset=utf-8');
         response.header('Creator', 'cdchris12');
         response.code(200);
