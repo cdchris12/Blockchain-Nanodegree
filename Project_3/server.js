@@ -44,10 +44,36 @@ server.route({
             process.exit(1);
         }
 
-        const response = h.response(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
-        response.type('application/json');
-        response.header('Creator', 'cdchris12');
-        return response;
+        let height = await blockchain.getBlockHeight();
+
+        if (request.params.b_num <= height && request.params.b_num >= 0) {
+            // Valid request; process it
+            const response = h.response(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
+            response.type('application/json; charset=utf-8');
+            response.header('Creator', 'cdchris12');
+            return response;
+        } else if (request.params.b_num < 0) {
+            // Requested block number is invalid, because the blockchain always has, at least, 0 blocks
+            // (with the genesis block being block #0)
+            const response = h.response("Invalid block index!\nBlock indices start at `0`");
+            response.type('text/html');
+            response.header('Creator', 'cdchris12');
+            response.code(400);
+            return response;
+        } else if (request.params.b_num > height) {
+            // Requested block does not yet exist
+            const response = h.response("Invalid block index! The current block height is: " + height);
+            response.type('text/html');
+            response.header('Creator', 'cdchris12');
+            response.code(400);
+            return response;
+        } else {
+            const response = h.response("Something's REALLY wrong here. Did you pass an integer in your request?");
+            response.type('text/html');
+            response.header('Creator', 'cdchris12');
+            response.code(418);
+            return response;
+        }
 
         //return(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
     }
