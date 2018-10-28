@@ -51,6 +51,7 @@ server.route({
             const response = h.response(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
             response.type('application/json; charset=utf-8');
             response.header('Creator', 'cdchris12');
+            response.code(200);
             return response;
         } else if (request.params.b_num < 0) {
             // Requested block number is invalid, because the blockchain always has, at least, 0 blocks
