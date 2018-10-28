@@ -8,27 +8,78 @@ const server=Hapi.server({
     port:8000
 });
 
-// Add the route
+// The default route, which serves as a list of our currently available routes
 server.route({
     method:'GET',
     path:'/',
     handler:function(request,h) {
 
         return(
-            "<h1>This page intentionally left blank.</h1>" +
+            "<h1>" + "The following methods are currently available: " + "</h1>" +
             "\n" +
             "\n" +
-            "The following methods are currently available: " +
             "<ul>" + "<li>" + "<h4>" + "GET /block/{block_num}" + "</h4>" +
-            "<ul>" + "<li>" + "To retrieve the contents of a particular block from the chain." + "</li>" + "</ul>" + "</li>" +
-            "<li>" + "<h4>" + "POST {something}" + "</h4>" +
-            "<ul>" + "<li>" + "To do some stuff." + "</li>" + "</ul>" + "</li>" +
+            "<ul>" + "<li>" + "Retrieve the contents of a particular block from the chain." + "</li>" + "</ul>" + "</li>" +
+            "<li>" + "<h4>" + "POST /block" + "</h4>" +
+            "<ul>" + "<li>" + "Add a block to the chain, using the request's payload as the data to be stored in the new block." + "</li>" + "</ul>" + "</li>" +
+            "<li>" + "<h4>" + "GET /resetWorld" + "</h4>" +
+            "<ul>" + "<li>" + "Completely reset the blockchain to zero." + "</li>" + "</ul>" + "</li>" +
+            "<li>" + "<h4>" + "GET /makeTestData" + "</h4>" +
+            "<ul>" + "<li>" + "Generate example blocks for testing." + "</li>" + "</ul>" + "</li>" +
             "</ul>"
         );
     }
 });
 
-// Add the route
+// "/resetWorld" route to reset the blockchain to zero.
+server.route({
+    method:'GET',
+    path:'/resetWorld',
+    handler: async function (request,h) {
+        try {
+            var blockchain = new chain.Blockchain();
+            await blockchain.init();
+        }
+        catch (err) {
+            console.log(err);
+            process.exit(1);
+        }
+
+        await backend.resetWorld()
+
+        const response = "Blockchain has been reset!";
+        response.type('text/html; charset=utf-8');
+        response.header('Creator', 'cdchris12');
+        response.code(200);
+        return response;
+    }
+});
+
+// "/makeTestData" route to generate test data for the blockchain
+server.route({
+    method:'GET',
+    path:'/makeTestData',
+    handler: async function (request,h) {
+        try {
+            var blockchain = new chain.Blockchain();
+            await blockchain.init();
+        }
+        catch (err) {
+            console.log(err);
+            process.exit(1);
+        }
+
+        await blockchain.generateBlocks();
+
+        const response = "Example data has been generated for the blockchain!";
+        response.type('text/html; charset=utf-8');
+        response.header('Creator', 'cdchris12');
+        response.code(200);
+        return response;
+    }
+});
+
+// "/block" GET route to return a specific block's JSON data.
 server.route({
     method:'GET',
     path:'/block/{b_num}',
@@ -70,6 +121,47 @@ server.route({
             return response;
         } else {
             const response = h.response("Something's REALLY wrong here. Did you pass an integer in your request?");
+            response.type('text/html');
+            response.header('Creator', 'cdchris12');
+            response.code(418);
+            return response;
+        }
+
+        //return(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
+    }
+});
+
+// "/block" POST route to allow adding a block to the chain.
+server.route({
+    method:'POST',
+    path:'/block',
+    handler: async function (request,h) {
+        // request.payload or request.rawPayload
+        // Input is a string, should return newly created block on success
+
+        try {
+            var blockchain = new chain.Blockchain();
+            await blockchain.init();
+        }
+        catch (err) {
+            console.log(err);
+            process.exit(1);
+        }
+
+        let height = await blockchain.getBlockHeight();
+
+        if (request.payload) {
+            // Valid request; process it
+            console.log(request.payload);
+
+            let newBlock = await blockchain.addBlock(new chain.Block(request.payload));
+            const response = h.response(newBlock);
+            response.type('application/json; charset=utf-8');
+            response.header('Creator', 'cdchris12');
+            response.code(200);
+            return response;
+        } else {
+            const response = h.response("Something's REALLY wrong here. Did you pass a payload?");
             response.type('text/html');
             response.header('Creator', 'cdchris12');
             response.code(418);

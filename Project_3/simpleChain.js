@@ -61,6 +61,7 @@ class Blockchain{
     // Add block to levelDB
     //console.log(newBlock)
     await backend.addData(newBlock.height, JSON.stringify(newBlock))
+    return JSON.stringify(newBlock);
   }
 
   // Get block height
