@@ -26,8 +26,38 @@ server.route({
             "<ul>" + "<li>" + "Completely reset the blockchain to zero." + "</li>" + "</ul>" + "</li>" +
             "<li>" + "<h4>" + "GET /makeTestData" + "</h4>" +
             "<ul>" + "<li>" + "Generate example blocks for testing." + "</li>" + "</ul>" + "</li>" +
+            "<li>" + "<h4>" + "GET /getBlockHeight" + "</h4>" +
+            "<ul>" + "<li>" + "Return the current block height of the chain." + "</li>" + "</ul>" + "</li>" +
             "</ul>"
         );
+    }
+});
+
+
+// "/getBlockHeight" route to get the current block height.
+server.route({
+    method:'GET',
+    path:'/getBlockHeight',
+    handler: async function (request,h) {
+        // request.payload or request.rawPayload
+        // Input is a string, should return newly created block on success
+
+        try {
+            var blockchain = new chain.Blockchain();
+            await blockchain.init();
+        }
+        catch (err) {
+            console.log(err);
+            process.exit(1);
+        }
+
+        let height = await blockchain.getBlockHeight();
+
+        const response = height;
+        response.type('text/html; charset=utf-8');
+        response.header('Creator', 'cdchris12');
+        response.code(200);
+        return response;
     }
 });
 
