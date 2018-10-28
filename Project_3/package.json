@@ -1,6 +1,6 @@
 {
   "name": "tako_coin",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A taco fueled blockchain",
   "main": "levelSandbox.js",
   "scripts": {
