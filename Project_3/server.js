@@ -1,4 +1,6 @@
 const Hapi=require('hapi');
+backend = require('./levelSandbox');
+chain = require('./simpleChain');
 
 // Create a server with a host and port
 const server=Hapi.server({
@@ -17,9 +19,9 @@ server.route({
             "\n" +
             "\n" +
             "The following methods are currently available: " +
-            "<ul>" + "<li>" + "<h4>GET /block/{block_num}</h4>" +
+            "<ul>" + "<li>" + "<h4>" + "GET /block/{block_num}" + "</h4>" +
             "<ul>" + "<li>" + "To retrieve the contents of a particular block from the chain." + "</li>" + "</ul>" + "</li>" +
-            "<li>" + "<h4>POST {something}</h4>" +
+            "<li>" + "<h4>" + "POST {something}" + "</h4>" +
             "<ul>" + "<li>" + "To do some stuff." + "</li>" + "</ul>" + "</li>" +
             "</ul>"
         );
@@ -30,10 +32,24 @@ server.route({
 server.route({
     method:'GET',
     path:'/block/{b_num}',
-    handler:function(request,h) {
+    handler: async function (request,h) {
         //request.params.b_num
 
-        return "You asked for block #" + request.params.b_num + "!!";
+        try {
+            var blockchain = new chain.Blockchain();
+            await blockchain.init();
+        }
+        catch (err) {
+            console.log(err);
+            process.exit(1);
+        }
+
+        const response = h.response(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
+        response.type('application/json');
+        response.header('Creator', 'cdchris12');
+        return response;
+
+        //return(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
     }
 });
 
@@ -42,11 +58,16 @@ async function start() {
 
     try {
         await server.start();
+        const blockchain = new chain.Blockchain();
+        await blockchain.init();
+        let height = await blockchain.getBlockHeight();
+        console.log('Current blockchain chain height is: ', height);
     }
     catch (err) {
         console.log(err);
         process.exit(1);
     }
+
 
     console.log('Server running at:', server.info.uri);
 };
