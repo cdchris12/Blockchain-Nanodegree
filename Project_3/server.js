@@ -201,7 +201,7 @@ server.route({
             return response;
         }
 
-        if ('body' in obj) {
+        if ('body' in obj && obj['body'] !== "") {
             let newBlock = await blockchain.addBlock(new chain.Block(obj['body']));
             const response = h.response(newBlock);
             response.type('application/json; charset=utf-8');
@@ -212,7 +212,7 @@ server.route({
             const response = h.response("Invalid JSON data supplied!");
             response.type('text/html; charset=utf-8');
             response.header('Creator', 'cdchris12');
-            response.code(400);
+            response.code(418);
             return response;
         }
     }
