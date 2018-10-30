@@ -165,6 +165,13 @@ server.route({
 server.route({
     method:'POST',
     path:'/block',
+    config: {
+        payload: {
+            //defaultContentType: 'text/plain'
+            parse: false
+            //allow: 'multipart/form-data',
+        }
+    },
     handler: async function (request,h) {
         // request.payload or request.rawPayload
         // Input is a string, should return newly created block on success
@@ -179,26 +186,35 @@ server.route({
         }
 
         let height = await blockchain.getBlockHeight();
+        txt = request.payload.toString('utf8')
 
-        if (request.payload) {
-            // Valid request; process it
-            console.log(request.payload);
+        //console.log(request.payload.toString('utf8'));
 
-            let newBlock = await blockchain.addBlock(new chain.Block(request.payload));
+        try {
+            obj = JSON.parse(request.payload.toString('utf8'));
+        }
+        catch (err) {
+            const response = h.response("Invalid JSON data supplied!");
+            response.type('text/html; charset=utf-8');
+            response.header('Creator', 'cdchris12');
+            response.code(418);
+            return response;
+        }
+
+        if ('body' in obj) {
+            let newBlock = await blockchain.addBlock(new chain.Block(obj['body']));
             const response = h.response(newBlock);
             response.type('application/json; charset=utf-8');
             response.header('Creator', 'cdchris12');
             response.code(200);
             return response;
         } else {
-            const response = h.response("Something's REALLY wrong here. Did you pass a payload?");
-            response.type('text/html');
+            const response = h.response("Invalid JSON data supplied!");
+            response.type('text/html; charset=utf-8');
             response.header('Creator', 'cdchris12');
-            response.code(418);
+            response.code(400);
             return response;
         }
-
-        //return(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
     }
 });
 
