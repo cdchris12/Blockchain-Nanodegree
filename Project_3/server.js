@@ -212,7 +212,7 @@ server.route({
             const response = h.response("Invalid JSON data supplied!");
             response.type('text/html; charset=utf-8');
             response.header('Creator', 'cdchris12');
-            response.code(418);
+            response.code(400);
             return response;
         }
     }
