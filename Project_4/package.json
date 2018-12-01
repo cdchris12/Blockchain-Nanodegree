@@ -1,0 +1,22 @@
+{
+  "name": "tako_coin",
+  "version": "0.0.4",
+  "description": "A taco fueled blockchain",
+  "main": "levelSandbox.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Chris Davis",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.6.1",
+    "crypto-js": "^3.1.9-1",
+    "hapi": "^17.6.0",
+    "level": "^4.0.0",
+    "hex2ascii": "0.0.3",
+    "bitcoinjs-lib": "^4.0.2",
+    "bitcoinjs-message": "^2.0.0",
+    "body-parser": "^1.18.3",
+    "wallet-address-validator": "^0.2.4"
+  }
+}
