@@ -21,16 +21,61 @@ server.route({
             "<h1>" + "The following methods are currently available: " + "</h1>" +
             "\n" +
             "\n" +
-            "<ul>" + "<li>" + "<h4>" + "GET /block/{block_num}" + "</h4>" +
-            "<ul>" + "<li>" + "Retrieve the contents of a particular block from the chain." + "</li>" + "</ul>" + "</li>" +
-            "<li>" + "<h4>" + "POST /block" + "</h4>" +
-            "<ul>" + "<li>" + "Add a block to the chain, using the request's payload as the data to be stored in the new block." + "</li>" + "</ul>" + "</li>" +
-            "<li>" + "<h4>" + "GET /resetWorld" + "</h4>" +
-            "<ul>" + "<li>" + "Completely reset the blockchain to zero." + "</li>" + "</ul>" + "</li>" +
-            "<li>" + "<h4>" + "GET /makeTestData" + "</h4>" +
-            "<ul>" + "<li>" + "Generate example blocks for testing." + "</li>" + "</ul>" + "</li>" +
-            "<li>" + "<h4>" + "GET /getBlockHeight" + "</h4>" +
-            "<ul>" + "<li>" + "Return the current block height of the chain." + "</li>" + "</ul>" + "</li>" +
+            "<ul>" +
+                "<li>" + 
+                    "<h4>" + "POST /requestValidation" + "</h4>" +
+                    "<ul>" + 
+                        "<li>" + 
+                            "Request a validation string." +
+                            "<ul>" +
+                                "<li>" + "Requires an input in the form of {\"address\": \"BTC_wallet_address\"}" + "</li>" +
+                                "<li>" + "Returns a value in the form of {\"walletAddress\": \"BTC_wallet_address\", \"requestTimeStamp\": 1541605128, \"message\": \"validation_message\", \"validationWindow\": 300}" + "</li>" +
+                            "</ul>" +
+                        "</li>" +
+                    "</ul>" +
+                "</li>" +
+                "<li>" + 
+                    "<h4>" + "POST /message-signature/validate" + "</h4>" +
+                    "<ul>" + 
+                        "<li>" + 
+                            "Attempt to authenticate to the API by submitting a signature proving ownership of a BTC address." +
+                            "<ul>" +
+                                "<li>" + "Requires an input in the form of {\"address\": \"BTC_wallet_address\", \"signature\": \"message_signature\"}" + "</li>" +
+                                "<li>" + "Returns a value in the form of {\"registerStar\": true, \"status\": {\"address\": \"BTC_wallet_address\", \"requestTimeStamp\": 1541605128, \"message\": \"validation_message\", \"validationWindow\": 200, \"messageSignature\": true}}" + "</li>" +
+                            "</ul>" +
+                        "</li>" +
+                    "</ul>" +
+                "</li>" +
+                "<li>" + 
+                    "<h4>" + "POST /block" + "</h4>" +
+                    "<ul>" + 
+                        "<li>" + "Add a block to the chain, using the request's payload as the data to be stored in the new block." + "</li>" +
+                    "</ul>" +
+                "</li>" +
+                "<li>" + 
+                    "<h4>" + "GET /block/{block_num}" + "</h4>" +
+                    "<ul>" +
+                        "<li>" + "Retrieve the contents of a particular block from the chain." + "</li>" +
+                    "</ul>" +
+                "</li>" +
+                "<li>" + 
+                    "<h4>" + "GET /resetWorld" + "</h4>" +
+                    "<ul>"+ 
+                        "<li>" + "Completely reset the blockchain to zero." + "</li>" +
+                    "</ul>" +
+                "</li>" +
+                "<li>" + 
+                    "<h4>" + "GET /makeTestData" + "</h4>" +
+                    "<ul>" + 
+                        "<li>" + "Generate example blocks for testing." + "</li>" + 
+                    "</ul>" + 
+                "</li>" +
+                "<li>" + 
+                    "<h4>" + "GET /getBlockHeight" + "</h4>" +
+                    "<ul>" + 
+                        "<li>" + "Return the current block height of the chain." + "</li>" + 
+                    "</ul>" + 
+                "</li>" +
             "</ul>"
         );
     }
@@ -164,7 +209,7 @@ server.route({
     }
 });
 
-// "/requestValidation" POST route to allow authenticating to the chain.
+// "/requestValidation" POST route to allow requesting auth info from the chain.
 server.route({
     method:'POST',
     path:'/requestValidation',
@@ -176,22 +221,7 @@ server.route({
         }
     },
     handler: async function (request,h) {
-        // request.payload or request.rawPayload
-        // Input is a string, should return newly created block on success
-
-        try {
-            var blockchain = new chain.Blockchain();
-            await blockchain.init();
-        }
-        catch (err) {
-            console.log(err);
-            process.exit(1);
-        }
-
-        let height = await blockchain.getBlockHeight();
-
-        //console.log(request.payload.toString('utf8'));
-
+        // Parse the input into JSON ourselves so we can return any errors ourselves
         try {
             obj = JSON.parse(request.payload.toString('utf8'));
         }
@@ -203,6 +233,7 @@ server.route({
             return response;
         }
 
+        // Process a valid JSON object
         if ('address' in obj && obj['address'] !== "") {
             var res = await mempool.requestAuth(obj["address"])
 
@@ -220,7 +251,58 @@ server.route({
                 return response;
             };
         } else {
+            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + obj.stringify());
+            response.type('text/plain; charset=utf-8');
+            response.header('Creator', 'cdchris12');
+            response.code(400);
+            return response;
+        };
+    }
+});
+
+// "/message-signature/validate" POST route to allow authenticating to the chain.
+server.route({
+    method:'POST',
+    path:'/message-signature/validate',
+    config: {
+        payload: {
+            defaultContentType: 'application/json',
+            parse: false
+            //allow: 'multipart/form-data',
+        }
+    },
+    handler: async function (request,h) {
+        // Parse the input into JSON ourselves so we can return any errors ourselves
+        try {
+            obj = JSON.parse(request.payload.toString('utf8'));
+        }
+        catch (err) {
             const response = h.response("Invalid JSON data supplied!\nYou POSTed:\n\n" + request.payload.toString('utf8'));
+            response.type('text/plain; charset=utf-8');
+            response.header('Creator', 'cdchris12');
+            response.code(400);
+            return response;
+        }
+
+        // Process a valid JSON object
+        if (('address' in obj && obj['address'] !== "") && ('signature' in obj && obj['signature'] !== "")) {
+            var res = await mempool.validateRequestByWallet(obj)
+
+            if (res){
+                const response = h.response(res);
+                response.type('application/json; charset=utf-8');
+                response.header('Creator', 'cdchris12');
+                response.code(200);
+                return response;
+            } else {
+                const response = h.response("Address validation failed!!");
+                response.type('text/plain; charset=utf-8');
+                response.header('Creator', 'cdchris12');
+                response.code(400);
+                return response;
+            };
+        } else {
+            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + obj.stringify());
             response.type('text/plain; charset=utf-8');
             response.header('Creator', 'cdchris12');
             response.code(400);

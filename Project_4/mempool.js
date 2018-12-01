@@ -1,16 +1,18 @@
 const SHA256 = require('crypto-js/sha256');
 var crypto = require("crypto");
 var WAValidator = require('wallet-address-validator');
+const bitcoinMessage = require('bitcoinjs-message');
 
 // This can be changed for testing the requestTimeout functionality for the mempool
 // Value is in seconds
-const timeout = 5;
+const timeout = 300;
 
 
 class Mempool{
     constructor(data){
         this.mempool = [];
         this.timeoutRequests = [];
+        this.mempoolValid = [];
     };
 
     removeValidationRequest(address, pool=null){
@@ -52,6 +54,48 @@ class Mempool{
         };
 
         return req;
+    };
+
+    async validateRequestByWallet(input){
+        var address = input['address'];
+        var signature = input['signature'];
+        var obj = this.mempool[address];
+
+        // If obj is falsey, this address isn't in the mempool
+        if (!obj) {
+            return false;
+        }
+
+        console.log(obj['message']);
+        console.log(address);
+        console.log(signature);
+        let isValid = bitcoinMessage.verify(obj['message'], address, signature);
+        console.log(isValid);
+
+        let timely = ((Math.floor(new Date() / 1000) - obj["requestTimeStamp"]) < obj['validationWindow'])
+
+        // If message not valid or outside the specified timeframe, return false
+        if (!isValid || !timely) {
+            return false;
+        };
+
+        var res = {};
+        res.registerStar = true;
+        res.status = {
+            "address": address,
+            "requestTimeStamp": obj['requestTimeStamp'],
+            "message": obj['message'],
+            "validationWindow": obj['validationWindow'],
+            "messageSignature": "valid"
+        };
+
+        // Save the new object to the valid array
+        this.mempoolValid[address] = res;
+
+        // Ensure the auth records get queued for removal
+        this.removeValidationRequest(address);
+
+        return res;
     };
 }
 

@@ -36,7 +36,7 @@ class Blockchain{
     // Block height
     newBlock.height = Height+1;
     // UTC timestamp
-    newBlock.time = new Date().getTime().toString().slice(0,-3);
+    newBlock.time = Math.floor(new Date() / 1000)
     // previous block hash
     if(newBlock.height>0){
       let tmpBlock = await this.getBlock(newBlock.height -1);
