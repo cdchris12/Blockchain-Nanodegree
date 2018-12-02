@@ -252,7 +252,7 @@ server.route({
     handler: async function (request,h) {
         // Parse the input into JSON ourselves so we can return any errors ourselves
         try {
-            let obj = JSON.parse(request.payload.toString('utf8'));
+            var obj = JSON.parse(request.payload.toString('utf8'));
         }
         catch (err) {
             const response = h.response("Invalid JSON data supplied!\nYou POSTed:\n\n" + request.payload.toString('utf8'));
@@ -303,7 +303,7 @@ server.route({
     handler: async function (request,h) {
         // Parse the input into JSON ourselves so we can return any errors ourselves
         try {
-            let obj = JSON.parse(request.payload.toString('utf8'));
+            var obj = JSON.parse(request.payload.toString('utf8'));
         }
         catch (err) {
             const response = h.response("Invalid JSON data supplied!\nYou POSTed:\n\n" + request.payload.toString('utf8'));
@@ -354,7 +354,7 @@ server.route({
     handler: async function (request,h) {
         // Parse the input into JSON ourselves so we can return any errors ourselves
         try {
-            let obj = JSON.parse(request.payload.toString('utf8'));
+            var obj = JSON.parse(request.payload.toString('utf8'));
         }
         catch (err) {
             // Invalid JSON data, as parsing failed
@@ -459,7 +459,7 @@ server.route({
 
         if (request.params.b_hash) {
             // Valid request; process it
-            let res = await blockchain.getBlockByHash(request.params.b_hash);
+            var res = await blockchain.getBlockByHash(request.params.b_hash);
 
             if (res) {
                 // Block was found
@@ -522,7 +522,7 @@ server.route({
                 return response;
             }
 
-            let res = await blockchain.getBlocksByWalletAddress(request.params.wallet_address);
+            var res = await blockchain.getBlocksByWalletAddress(request.params.wallet_address);
 
             if (res) {
                 // Block(s) was/were found
@@ -586,7 +586,7 @@ server.route({
         txt = request.payload.toString('utf8')
 
         try {
-            obj = JSON.parse(request.payload.toString('utf8'));
+            var obj = JSON.parse(request.payload.toString('utf8'));
         }
         catch (err) {
             const response = h.response("Invalid JSON data supplied!");
