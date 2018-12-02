@@ -61,8 +61,9 @@ function getDataByHash(hash) {
   return new Promise(function(resolve, reject){
       db.createReadStream()
       .on('data', function (data) {
-          if(JSON.parse(data).hash === hash){
-              block = data;
+          let tmp = JSON.parse(data.value);
+          if(tmp.hash === hash){
+              block = data.value;
           };
       })
       .on('error', function (err) {
@@ -79,8 +80,9 @@ function getDataByWalletAddress(address) {
   return new Promise(function(resolve, reject){
       db.createReadStream()
       .on('data', function (data) {
-          if(JSON.parse(data).body.address === address){
-              dataArray.push(data.key)
+          let tmp = JSON.parse(data.value);
+          if(tmp.body.address === address){
+              dataArray.push(data.value)
           };
       })
       .on('error', function (err) {

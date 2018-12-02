@@ -1,4 +1,6 @@
-const Hapi=require('hapi');
+const Hapi = require('hapi');
+const hex2ascii = require('hex2ascii');
+const WAValidator = require('wallet-address-validator');
 backend = require('./levelSandbox');
 chain = require('./simpleChain');
 Mempool = require('./mempool');
@@ -280,7 +282,7 @@ server.route({
                 return response;
             };
         } else {
-            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + obj.stringify());
+            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + JSON.stringify(obj));
             response.type('text/plain; charset=utf-8');
             response.header('Creator', 'cdchris12');
             response.code(400);
@@ -331,7 +333,7 @@ server.route({
                 return response;
             };
         } else {
-            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + obj.stringify());
+            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + JSON.stringify(obj));
             response.type('text/plain; charset=utf-8');
             response.header('Creator', 'cdchris12');
             response.code(400);
@@ -382,7 +384,7 @@ server.route({
                     // Valid star data
 
                     // Encode star data into JSON
-                    let body = {
+                    var body = {
                         address: obj.address,
                         star: {
                             ra: obj.star.ra,
@@ -394,7 +396,7 @@ server.route({
                     };
                 } else {
                     // Invalid star data
-                    const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + obj.stringify());
+                    const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + JSON.stringify(obj));
                     response.type('text/plain; charset=utf-8');
                     response.header('Creator', 'cdchris12');
                     response.code(400);
@@ -411,9 +413,9 @@ server.route({
                     process.exit(1);
                 }
 
-                let newBlock = await blockchain.addBlock(new chain.Block(obj));
+                let newBlock = await blockchain.addBlock(new chain.Block(body));
                 res = JSON.parse(newBlock)
-                res.body.star.storyDecoded = hex2ascii(res.star.story);
+                res.body.star.storyDecoded = hex2ascii(res.body.star.story);
 
                 // Remove this wallet address' authentication
                 let auth = await mempool.removeAddressValidation(obj['address']);
@@ -434,7 +436,7 @@ server.route({
             };
         } else {
             // Request didn't contain an `address` field, or it was blank
-            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + obj.stringify());
+            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + JSON.stringify(obj));
             response.type('text/plain; charset=utf-8');
             response.header('Creator', 'cdchris12');
             response.code(400);
@@ -460,6 +462,7 @@ server.route({
 
         if (request.params.b_hash) {
             // Valid request; process it
+            console.log(request.params.b_hash)
             var res = await blockchain.getBlockByHash(request.params.b_hash);
 
             if (res) {
@@ -513,7 +516,7 @@ server.route({
             // Valid request; process it
 
             // Ensure this is a valid BTC address
-            var valid = WAValidator.validate(wallet_address, 'BTC');
+            var valid = WAValidator.validate(request.params.wallet_address, 'BTC');
             if(!valid){
                 // Invalid address
                 const response = h.response("The supplied wallet address \"" + request.params.wallet_address + "\" is not a valid BTC wallet address!!");

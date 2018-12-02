@@ -1,6 +1,6 @@
 const SHA256 = require('crypto-js/sha256');
-var crypto = require("crypto");
-var WAValidator = require('wallet-address-validator');
+const crypto = require("crypto");
+const WAValidator = require('wallet-address-validator');
 const bitcoinMessage = require('bitcoinjs-message');
 
 // This can be changed for testing the requestTimeout functionality for the mempool
@@ -66,11 +66,11 @@ class Mempool{
             return false;
         }
 
-        console.log(obj['message']);
-        console.log(address);
-        console.log(signature);
+        //console.log(obj['message']);
+        //console.log(address);
+        //console.log(signature);
         let isValid = bitcoinMessage.verify(obj['message'], address, signature);
-        console.log(isValid);
+        //console.log(isValid);
 
         let timely = ((Math.floor(new Date() / 1000) - obj["requestTimeStamp"]) < obj['validationWindow'])
 
@@ -107,7 +107,7 @@ class Mempool{
     };
 
     async removeAddressValidation(address){
-        delete this.mempool[address];
+        delete this.mempoolValid[address];
         return;
     };
 }

@@ -81,6 +81,7 @@ class Blockchain{
 
   async getBlockByHash(hash){
     // return object as a JSON blob
+    console.log(hash)
     let block = await backend.getDataByHash(hash);
     return JSON.parse(block);
   }
@@ -88,7 +89,13 @@ class Blockchain{
   async getBlocksByWalletAddress(address){
     // return object as an array of JSON blobs
     let blocks = await backend.getDataByWalletAddress(address);
-    return JSON.parse(blocks);
+
+    let res = [];
+    for (var i = 0; i < blocks.length; i++){
+      res.push(JSON.parse(blocks[i]));
+    }
+
+    return res;
   }
 
   async generateBlocks(num) {
