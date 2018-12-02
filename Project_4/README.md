@@ -72,10 +72,10 @@ This project implements a simple blockchain, written in NodeJS. It uses the hapi
    * `curl -X POST http://localhost:8000/message-signature/validate -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "signature": "<insert_signature_here>"}'`
 
  8. Submit a new star for registration:
-   * `{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}`
+   * `curl -X POST http://localhost:8000/star/register -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52'\'' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}'`
 
  9. Attempt to resubmit the same registration:
-   * `{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}`
+   * `curl -X POST http://localhost:8000/star/register -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52'\'' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}'`
      * You should see an `HTTP/401` response here, indicating you are not authorized to submit another star registration, as registrations are only valid for a single star.
 
  10. Using the block hash you obtained in the response from step 7, request the block data for that specific block hash:
