@@ -264,7 +264,7 @@ server.route({
 
         // Process a valid JSON object
         if ('address' in obj && obj['address'] !== "") {
-            var res = await mempool.requestAuth(obj["address"])
+            res = await mempool.requestAuth(obj["address"])
 
             if (res){
                 const response = h.response(res);
@@ -412,7 +412,7 @@ server.route({
                 }
 
                 let newBlock = await blockchain.addBlock(new chain.Block(obj));
-                newBlock.body.star["storyDecoded"] = obj.star.story;
+                newBlock.body.star["storyDecoded"] = newBlock.star.story;
 
                 // Remove this wallet address' authentication
                 let auth = await mempool.removeAddressValidation(obj['address']);
