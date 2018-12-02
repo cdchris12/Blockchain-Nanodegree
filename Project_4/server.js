@@ -346,7 +346,7 @@ server.route({
     path:'/star/register',
     config: {
         payload: {
-            defaultContentType: 'application/json'
+            defaultContentType: 'application/json',
             parse: false
             //allow: 'multipart/form-data',
         }
