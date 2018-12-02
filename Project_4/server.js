@@ -412,13 +412,14 @@ server.route({
                 }
 
                 let newBlock = await blockchain.addBlock(new chain.Block(obj));
-                newBlock.body.star["storyDecoded"] = newBlock.star.story;
+                res = JSON.parse(newBlock)
+                res.body.star.storyDecoded = hex2ascii(res.star.story);
 
                 // Remove this wallet address' authentication
                 let auth = await mempool.removeAddressValidation(obj['address']);
 
                 // Return the created block
-                const response = h.response(newBlock);
+                const response = h.response(res);
                 response.type('application/json; charset=utf-8');
                 response.header('Creator', 'cdchris12');
                 response.code(201);
