@@ -52,8 +52,9 @@ This project implements a simple blockchain, written in NodeJS. It uses the hapi
    * `npm install`
 
  2. Open a command prompt and run the webserver:
-   * `node`
-   * `.load server.js`
+   * You can run the interpreter one of two ways:
+     * `node server.js` or 
+     * `node` followed by `.load server.js`
 
  3. Reset the blockchain to zero to create a stable testing environment:
    * `curl "http://localhost:8000/resetWorld" -D - `
