@@ -48,22 +48,37 @@ This project implements a simple blockchain, written in NodeJS. It uses the hapi
 
 ## Testing the API:
 
- 1. Open a command prompt after installing node and the required dependencies, and run the webserver:
-   * `node server.js`
+ 1. Install the required dependencies:
+   * `npm install`
 
- 2. Reset the blockchain to zero to create a stable testing environment:
+ 2. Open a command prompt and run the webserver:
+   * `node`
+   * `.load server.js`
+
+ 3. Reset the blockchain to zero to create a stable testing environment:
    * `curl "http://localhost:8000/resetWorld" -D - `
 
- 3. Populate the blockchain with some testing data:
+ 4. Populate the blockchain with some testing data:
    * `curl "http://localhost:8000/makeTestData" -D - `
 
- 4. Send an authentication request using BTC address `15VrsbfEWbbRAePTY5rqutRvD6otRw421C`:
+ 5. Send an authentication request using BTC address `15VrsbfEWbbRAePTY5rqutRvD6otRw421C`:
    * `curl -X POST http://localhost:8000/requestValidation -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{"address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C"}'`
 
- 5. Go to https://ordinarydude.github.io/offline-bitcoin-signer/ and sign the message returned by your last curl command using the private key `Ky2w1AqJZAu5hshZJDs8GGFjhREYi7yQVrdCYwyLgFM9jeZ5jRwE`
+ 6. Go to https://ordinarydude.github.io/offline-bitcoin-signer/ and sign the message returned by your last curl command using the private key `Ky2w1AqJZAu5hshZJDs8GGFjhREYi7yQVrdCYwyLgFM9jeZ5jRwE`
    * ***FOR TESTING ONLY!!!! DO NOT USE THIS TOOL TO SIGN MESSAGES WITH ANY ADDRESS YOU DO NOT WANT TO EXPOSE THE PRIVATE KEY FOR***
 
- 6. Authenticate to the chain with the signature you just generated:
+ 7. Authenticate to the chain with the signature you just generated:
    * `curl -X POST http://localhost:8000/message-signature/validate -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "signature": "<insert_signature_here>"}'`
 
- 7. <Next step goes here>
+ 8. Submit a new star for registration:
+   * `{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}`
+
+ 9. Attempt to resubmit the same registration:
+   * `{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}`
+     * You should see an `HTTP/401` response here, indicating you are not authorized to submit another star registration, as registrations are only valid for a single star.
+
+ 10. Using the block hash you obtained in the response from step 7, request the block data for that specific block hash:
+   * `curl "http://localhost:8000/stars/hash:<block_hash>"`
+
+ 11. Check for all stars registered to this specific wallet address:
+   * `curl "http://localhost:8000/stars/address:15VrsbfEWbbRAePTY5rqutRvD6otRw421C"`
