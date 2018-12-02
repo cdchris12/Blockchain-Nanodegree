@@ -6,13 +6,18 @@ This project implements a simple blockchain, written in NodeJS. It uses the hapi
 
  * POST `/requestValidation`
    * Request a validation string.
-      * Requires an input in the form of `{"address": "BTC_wallet_address"}`
-      * Returns a value in the form of `{"walletAddress": "BTC_wallet_address", "requestTimeStamp": 1541605128, "message": "validation_message", "validationWindow": 300}`
+     * Requires an input in the form of `{"address": "BTC_wallet_address"}`
+     * Returns a value in the form of `{"walletAddress": "BTC_wallet_address", "requestTimeStamp": 1541605128, "message": "validation_message", "validationWindow": 300}`
 
  * POST `/message-signature/validate`
    * Request a validation string.
-      * Requires an input in the form of `{"address": "BTC_wallet_address", "signature": "message_signature"}"`
-      * Returns a value in the form of `{"registerStar": true, "status": {"address": "BTC_wallet_address", "requestTimeStamp": 1541605128, "message": "validation_message", "validationWindow": 200, "messageSignature": true}}`
+     * Requires an input in the form of `{"address": "BTC_wallet_address", "signature": "message_signature"}"`
+     * Returns a value in the form of `{"registerStar": true, "status": {"address": "BTC_wallet_address", "requestTimeStamp": 1541605128, "message": "validation_message", "validationWindow": 200, "messageSignature": true}}`
+
+ * POST `/star/register`
+   * Register a star on the blockchain.
+     * Requires an input in the form of `{"address": "BTC_wallet_address", "star": { "dec": "68° 52' 56.9", "ra": "16h 29m 1.0s", "mag": "star_magnitude", "cen": "star_centaurus", "story": "Found star using https://www.google.com/sky/"}}"`
+     * Returns a value in the form of `{"hash": "block_hash", "height": 57, "body": { "address": "BTC_wallet_address", "star": { "ra": "16h 29m 1.0s", "dec": "-26° 29' 24.9", "mag": "", "cen": "", "story": "story_encoded", "storyDecoded": "Found star using https://www.google.com/sky/"}}, "time": "1532296234", "previousBlockHash": "previous_hash"}"` 
 
  * POST `/block`
    * Add a block to the chain, using the request's payload as the data to be stored in the new block.
@@ -52,3 +57,5 @@ This project implements a simple blockchain, written in NodeJS. It uses the hapi
 
  6. Authenticate to the chain with the signature you just generated:
    * `curl -X POST http://localhost:8000/message-signature/validate -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "signature": "<insert_signature_here>"}'`
+
+ 7. <Next step goes here>

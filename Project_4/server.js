@@ -47,9 +47,33 @@ server.route({
                     "</ul>" +
                 "</li>" +
                 "<li>" + 
+                    "<h4>" + "POST /star/register" + "</h4>" +
+                    "<ul>" + 
+                        "<li>" + 
+                            "Register a star on the blockchain." +
+                            "<ul>" +
+                                "<li>" + "Requires an input in the form of {\"address\": \"BTC_wallet_address\", \"star\": { \"dec\": \"68° 52' 56.9\", \"ra\": \"16h 29m 1.0s\", \"mag\": \"star_magnitude\", \"cen\": \"star_centaurus\", \"story\": \"Found star using https://www.google.com/sky/\"}}" + "</li>" +
+                                "<li>" + "Returns a value in the form of {\"hash\": \"block_hash\", \"height\": 57, \"body\": { \"address\": \"BTC_wallet_address\", \"star\": { \"ra\": \"16h 29m 1.0s\", \"dec\": \"-26° 29' 24.9\", \"mag\": \"\", \"cen\": \"\", \"story\": \"story_encoded\", \"storyDecoded\": \"Found star using https://www.google.com/sky/\"}}, \"time\": \"1532296234\", \"previousBlockHash\": \"previous_hash\"}" + "</li>" +
+                            "</ul>" +
+                        "</li>" +
+                    "</ul>" +
+                "</li>" +
+                "<li>" + 
                     "<h4>" + "POST /block" + "</h4>" +
                     "<ul>" + 
                         "<li>" + "Add a block to the chain, using the request's payload as the data to be stored in the new block." + "</li>" +
+                    "</ul>" +
+                "</li>" +
+                "<li>" + 
+                    "<h4>" + "GET /stars/hash:{block_hash}" + "</h4>" +
+                    "<ul>" +
+                        "<li>" + "Return a specific block's JSON data, identified by the block's hash." + "</li>" +
+                    "</ul>" +
+                "</li>" +
+                "<li>" + 
+                    "<h4>" + "GET /stars/address:{wallet_address}" + "</h4>" +
+                    "<ul>" +
+                        "<li>" + "Return an array of any stars' data that are registered to the supplied wallet address." + "</li>" +
                     "</ul>" +
                 "</li>" +
                 "<li>" + 
@@ -177,7 +201,12 @@ server.route({
 
         if (request.params.b_num <= height && request.params.b_num >= 0) {
             // Valid request; process it
-            const response = h.response(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
+            var res = JSON.stringify(await blockchain.getBlock(request.params.b_num));
+            if ("star" in res.body) {
+                res.body.star.storyDecoded = hex2ascii(res.body.star.story);
+            }
+
+            const response = h.response(res);
             response.type('application/json; charset=utf-8');
             response.header('Creator', 'cdchris12');
             response.code(200);
@@ -198,10 +227,10 @@ server.route({
             response.code(400);
             return response;
         } else {
-            const response = h.response("Something's REALLY wrong here. Did you pass an integer in your request?");
+            const response = h.response("Something's REALLY wrong here. You passed \"" + request.params.b_num.toString() + "\"in your request; is it an integer?");
             response.type('text/html');
             response.header('Creator', 'cdchris12');
-            response.code(418);
+            response.code(400);
             return response;
         }
 
@@ -223,7 +252,7 @@ server.route({
     handler: async function (request,h) {
         // Parse the input into JSON ourselves so we can return any errors ourselves
         try {
-            obj = JSON.parse(request.payload.toString('utf8'));
+            let obj = JSON.parse(request.payload.toString('utf8'));
         }
         catch (err) {
             const response = h.response("Invalid JSON data supplied!\nYou POSTed:\n\n" + request.payload.toString('utf8'));
@@ -274,7 +303,7 @@ server.route({
     handler: async function (request,h) {
         // Parse the input into JSON ourselves so we can return any errors ourselves
         try {
-            obj = JSON.parse(request.payload.toString('utf8'));
+            let obj = JSON.parse(request.payload.toString('utf8'));
         }
         catch (err) {
             const response = h.response("Invalid JSON data supplied!\nYou POSTed:\n\n" + request.payload.toString('utf8'));
@@ -311,6 +340,224 @@ server.route({
     }
 });
 
+// "/star/register" POST route to allow registering a star to the chain.
+server.route({
+    method:'POST',
+    path:'/star/register',
+    config: {
+        payload: {
+            defaultContentType: 'application/json'
+            parse: false
+            //allow: 'multipart/form-data',
+        }
+    },
+    handler: async function (request,h) {
+        // Parse the input into JSON ourselves so we can return any errors ourselves
+        try {
+            let obj = JSON.parse(request.payload.toString('utf8'));
+        }
+        catch (err) {
+            // Invalid JSON data, as parsing failed
+            const response = h.response("Invalid JSON data supplied!\nYou POSTed:\n\n" + request.payload.toString('utf8'));
+            response.type('text/plain; charset=utf-8');
+            response.header('Creator', 'cdchris12');
+            response.code(400);
+            return response;
+        }
+
+        // Verify content of JSON response
+        if ('address' in obj && obj['address'] !== "") {
+            var authenticated = await mempool.verifyAddressRequest(obj['address'])
+
+            if (authenticated){
+                // Address authenticated
+
+                // Verify star data is seemingly valid
+                if (
+                    ("star" in obj) && 
+                    ("dec" in obj["star"] && obj["star"]["dec"] != "") && 
+                    ("ra" in obj["star"] && obj["star"]["ra"] != "") && 
+                    ("story" in obj["star"])
+                ) {
+                    // Valid star data
+
+                    // Encode star data into JSON
+                    let body = {
+                        address: obj.address,
+                        star: {
+                            ra: obj.star.ra,
+                            dec: obj.star.dec,
+                            mag: ("mag" in obj.star) ? obj.star.mag : "",
+                            cen: ("cen" in obj.star) ? obj.star.cen : "",
+                            story: Buffer(obj.star.story).toString('hex')
+                        }
+                    };
+                } else {
+                    // Invalid star data
+                    const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + obj.stringify());
+                    response.type('text/plain; charset=utf-8');
+                    response.header('Creator', 'cdchris12');
+                    response.code(400);
+                    return response;
+                };
+
+                // Add block to chain
+                try {
+                    var blockchain = new chain.Blockchain();
+                    await blockchain.init();
+                }
+                catch (err) {
+                    console.log(err);
+                    process.exit(1);
+                }
+
+                let newBlock = await blockchain.addBlock(new chain.Block(obj));
+                newBlock.body.star["storyDecoded"] = obj.star.story;
+
+                // Remove this wallet address' authentication
+                let auth = await mempool.removeAddressValidation(obj['address']);
+
+                // Return the created block
+                const response = h.response(newBlock);
+                response.type('application/json; charset=utf-8');
+                response.header('Creator', 'cdchris12');
+                response.code(201);
+                return response;
+            } else {
+                // Not authenticated
+                const response = h.response("Address not authenticated!!");
+                response.type('text/plain; charset=utf-8');
+                response.header('Creator', 'cdchris12');
+                response.code(401);
+                return response;
+            };
+        } else {
+            // Request didn't contain an `address` field, or it was blank
+            const response = h.response("Bad JSON data supplied!\nYou POSTed:\n\n" + obj.stringify());
+            response.type('text/plain; charset=utf-8');
+            response.header('Creator', 'cdchris12');
+            response.code(400);
+            return response;
+        };
+    }
+});
+
+// "/stars/hash:{b_hash}" GET route to return a specific block's JSON data, identified by the block's hash.
+server.route({
+    method:'GET',
+    path:'/stars/hash:{b_hash}',
+    handler: async function (request,h) {
+
+        try {
+            var blockchain = new chain.Blockchain();
+            await blockchain.init();
+        }
+        catch (err) {
+            console.log(err);
+            process.exit(1);
+        }
+
+        if (request.params.b_hash) {
+            // Valid request; process it
+            let res = await blockchain.getBlockByHash(request.params.b_hash);
+
+            if (res) {
+                // Block was found
+                
+                // Inject the star story into the JSON object before returning it
+                res.body.star.storyDecoded = hex2ascii(res.body.star.story);
+
+                const response = h.response(res);
+                response.type('application/json; charset=utf-8');
+                response.header('Creator', 'cdchris12');
+                response.code(200);
+                return response;
+            } else {
+                // Block was not found in the chain
+                const response = h.response("Block hash \"" + request.params.b_hash + "\" not found in the blockchain!");
+                response.type('text/html');
+                response.header('Creator', 'cdchris12');
+                response.code(400);
+                return response;
+            };
+        } else {
+            // Block hash is an empty string
+            const response = h.response("Something's REALLY wrong here. Did you pass a block hash to search for in your request?");
+            response.type('text/html');
+            response.header('Creator', 'cdchris12');
+            response.code(400);
+            return response;
+        }
+
+        //return(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
+    }
+});
+
+// "/stars/address:{wallet_address}" GET route to return a specific block's JSON data, identified by the wallet address the star is registered to.
+server.route({
+    method:'GET',
+    path:'/stars/address:{wallet_address}',
+    handler: async function (request,h) {
+
+        try {
+            var blockchain = new chain.Blockchain();
+            await blockchain.init();
+        }
+        catch (err) {
+            console.log(err);
+            process.exit(1);
+        }
+
+        if (request.params.wallet_address) {
+            // Valid request; process it
+
+            // Ensure this is a valid BTC address
+            var valid = WAValidator.validate(wallet_address, 'BTC');
+            if(!valid){
+                // Invalid address
+                const response = h.response("The supplied wallet address \"" + request.params.wallet_address + "\" is not a valid BTC wallet address!!");
+                response.type('text/html');
+                response.header('Creator', 'cdchris12');
+                response.code(400);
+                return response;
+            }
+
+            let res = await blockchain.getBlocksByWalletAddress(request.params.wallet_address);
+
+            if (res) {
+                // Block(s) was/were found
+
+                // Inject the star story into the JSON object before returning it
+                for (var i = 0; i < res.length; i++) {
+                    res[i].body.star.storyDecoded = hex2ascii(res[i].body.star.story);
+                }
+
+                const response = h.response(res);
+                response.type('application/json; charset=utf-8');
+                response.header('Creator', 'cdchris12');
+                response.code(200);
+                return response;
+            } else {
+                // Block was not found in the chain
+                const response = h.response(res);
+                response.type('application/json; charset=utf-8');
+                response.header('Creator', 'cdchris12');
+                response.code(204);
+                return response;
+            };
+        } else {
+            // Block hash is an empty string
+            const response = h.response("Something's REALLY wrong here. Did you pass a block hash to search for in your request?");
+            response.type('text/html');
+            response.header('Creator', 'cdchris12');
+            response.code(400);
+            return response;
+        }
+
+        //return(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
+    }
+});
+
 // "/block" POST route to allow adding a block to the chain.
 server.route({
     method:'POST',
@@ -338,8 +585,6 @@ server.route({
         let height = await blockchain.getBlockHeight();
         txt = request.payload.toString('utf8')
 
-        //console.log(request.payload.toString('utf8'));
-
         try {
             obj = JSON.parse(request.payload.toString('utf8'));
         }
@@ -347,7 +592,7 @@ server.route({
             const response = h.response("Invalid JSON data supplied!");
             response.type('text/html; charset=utf-8');
             response.header('Creator', 'cdchris12');
-            response.code(418);
+            response.code(400);
             return response;
         }
 

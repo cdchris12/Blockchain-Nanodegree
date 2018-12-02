@@ -73,11 +73,22 @@ class Blockchain{
     // Print out the blocks, and their data, in order?
   }
 
-  // get block
   async getBlock(blockHeight){
     // return object as a JSON blob
     let value = await backend.getData(blockHeight);
     return JSON.parse(value);
+  }
+
+  async getBlockByHash(hash){
+    // return object as a JSON blob
+    let block = await backend.getDataByHash(hash);
+    return JSON.parse(block);
+  }
+
+  async getBlocksByWalletAddress(address){
+    // return object as an array of JSON blobs
+    let blocks = await backend.getDataByWalletAddress(address);
+    return JSON.parse(blocks);
   }
 
   async generateBlocks(num) {

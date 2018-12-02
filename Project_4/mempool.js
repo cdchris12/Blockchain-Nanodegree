@@ -97,6 +97,19 @@ class Mempool{
 
         return res;
     };
+
+    async verifyAddressRequest(address){
+        if (address in this.mempoolValid) {
+            return true;
+        } else {
+            return false;
+        };
+    };
+
+    async removeAddressValidation(address){
+        delete this.mempool[address];
+        return;
+    };
 }
 
 module.exports = { Mempool }

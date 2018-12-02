@@ -56,6 +56,42 @@ function getAllKeys(value) {
   });
 };
 
+function getDataByHash(hash) {
+  let block = null;
+  return new Promise(function(resolve, reject){
+      db.createReadStream()
+      .on('data', function (data) {
+          if(JSON.parse(data).hash === hash){
+              block = data;
+          };
+      })
+      .on('error', function (err) {
+          reject(err)
+      })
+      .on('close', function () {
+          resolve(block);
+      });
+  });
+}
+
+function getDataByWalletAddress(address) {
+  let dataArray = []
+  return new Promise(function(resolve, reject){
+      db.createReadStream()
+      .on('data', function (data) {
+          if(JSON.parse(data).body.address === address){
+              dataArray.push(data.key)
+          };
+      })
+      .on('error', function (err) {
+          reject(err)
+      })
+      .on('close', function () {
+          resolve(dataArray);
+      });
+  });
+}
+
 function getAllData(value) {
   let obj = {}
   return new Promise(function(resolve, reject){
@@ -74,4 +110,4 @@ function getAllData(value) {
 // End testing data block
 
 // Setup functions that should be exported
-module.exports = { addData, getData, rmData, resetWorld, makeSampleData, getAllKeys, getAllData }
+module.exports = { addData, getData, rmData, resetWorld, makeSampleData, getAllKeys, getAllData, getDataByHash, getDataByWalletAddress }
