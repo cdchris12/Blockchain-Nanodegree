@@ -29,6 +29,7 @@ class Mempool{
     async requestAuth(address){
         if (address in this.mempool){
             var req = this.mempool[address];
+            req.validationWindow = (timeout - (Math.floor(new Date() / 1000) - req.requestTimeStamp));
         } else{
             // Ensure this is a valid BTC address
             var valid = WAValidator.validate(address, 'BTC');
@@ -36,13 +37,10 @@ class Mempool{
                 return false
             }
 
-            // Generate an auth value
-            var auth = crypto.randomBytes(15).toString('hex');
-
             // Set the object `req`'s various values
             var req = {}
             req["requestTimeStamp"] = Math.floor(new Date() / 1000);
-            req["message"] = auth + ":" + req["requestTimeStamp"].toString() + ":starRegistry";
+            req["message"] = address + ":" + req["requestTimeStamp"].toString() + ":starRegistry";
             req["walletAddress"] = address
             req["validationWindow"] = timeout
 
