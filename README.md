@@ -17,7 +17,7 @@ This project implements a simple blockchain, written in NodeJS. It uses the hapi
  * POST `/block`
    * Register a star on the blockchain.
      * Requires an input in the form of `{"address": "BTC_wallet_address", "star": { "dec": "68° 52' 56.9", "ra": "16h 29m 1.0s", "mag": "star_magnitude", "cen": "star_centaurus", "story": "Found star using https://www.google.com/sky/"}}"`
-     * Returns a value in the form of `{"hash": "block_hash", "height": 57, "body": { "address": "BTC_wallet_address", "star": { "ra": "16h 29m 1.0s", "dec": "-26° 29' 24.9", "mag": "", "cen": "", "story": "story_encoded", "storyDecoded": "Found star using https://www.google.com/sky/"}}, "time": 1532296234, "previousBlockHash": "previous_hash"}` 
+     * Returns a value in the form of `{"hash": "block_hash", "height": 57, "body": { "address": "BTC_wallet_address", "star": { "ra": "16h 29m 1.0s", "dec": "-26° 29' 24.9", "mag": "", "cen": "", "story": "story_encoded", "storyDecoded": "Found star using https://www.google.com/sky/"}}, "time": 1532296234, "previousBlockHash": "previous_hash"}`
 
  * GET `/stars/hash:{block_hash}`
    * Return a specific block's JSON data, identified by the block's hash.

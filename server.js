@@ -195,14 +195,19 @@ server.route({
 
         let height = await blockchain.getBlockHeight();
 
-        if (request.params.b_num <= height && request.params.b_num >= 0) {
+        if (
+                typeof request.params.b_num != "number" && 
+                request.params.b_num <= height && 
+                request.params.b_num >= 0
+            ) {
             // Valid request; process it
-            var res = JSON.stringify(await blockchain.getBlock(request.params.b_num));
-            if ("star" in res.body) {
+            var res = await blockchain.getBlock(request.params.b_num);
+            //console.log(res);
+            if (typeof res.body === "object" && "star" in res.body) {
                 res.body.star.storyDecoded = hex2ascii(res.body.star.story);
             }
 
-            const response = h.response(res);
+            const response = h.response(JSON.stringify(res));
             response.type('application/json; charset=utf-8');
             response.header('Creator', 'cdchris12');
             response.code(200);
