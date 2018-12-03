@@ -14,13 +14,10 @@ This project implements a simple blockchain, written in NodeJS. It uses the hapi
      * Requires an input in the form of `{"address": "BTC_wallet_address", "signature": "message_signature"}"`
      * Returns a value in the form of `{"registerStar": true, "status": {"address": "BTC_wallet_address", "requestTimeStamp": 1541605128, "message": "validation_message", "validationWindow": 200, "messageSignature": true}}`
 
- * POST `/star/register`
+ * POST `/block`
    * Register a star on the blockchain.
      * Requires an input in the form of `{"address": "BTC_wallet_address", "star": { "dec": "68° 52' 56.9", "ra": "16h 29m 1.0s", "mag": "star_magnitude", "cen": "star_centaurus", "story": "Found star using https://www.google.com/sky/"}}"`
      * Returns a value in the form of `{"hash": "block_hash", "height": 57, "body": { "address": "BTC_wallet_address", "star": { "ra": "16h 29m 1.0s", "dec": "-26° 29' 24.9", "mag": "", "cen": "", "story": "story_encoded", "storyDecoded": "Found star using https://www.google.com/sky/"}}, "time": 1532296234, "previousBlockHash": "previous_hash"}` 
-
- * POST `/block`
-   * Add a block to the chain, using the request's payload as the data to be stored in the new block.
 
  * GET `/stars/hash:{block_hash}`
    * Return a specific block's JSON data, identified by the block's hash.
@@ -72,10 +69,10 @@ This project implements a simple blockchain, written in NodeJS. It uses the hapi
    * `curl -X POST http://localhost:8000/message-signature/validate -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "signature": "<insert_signature_here>"}'`
 
  8. Submit a new star for registration:
-   * `curl -X POST http://localhost:8000/star/register -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52'\'' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}'`
+   * `curl -X POST http://localhost:8000/block -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52'\'' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}'`
 
  9. Attempt to resubmit the same registration:
-   * `curl -X POST http://localhost:8000/star/register -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52'\'' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}'`
+   * `curl -X POST http://localhost:8000/block -H 'Content-Type: application/json' -H 'cache-control: no-cache' -d '{ "address": "15VrsbfEWbbRAePTY5rqutRvD6otRw421C", "star": { "dec": "68° 52'\'' 56.9", "ra": "16h 29m 1.0s", "story": "Found star using https://www.google.com/sky/"}}'`
      * You should see an `HTTP/401` response here, indicating you are not authorized to submit another star registration, as registrations are only valid for a single star.
 
  10. Using the block hash you obtained in the response from step 7, request the block data for that specific block hash:

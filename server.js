@@ -49,7 +49,7 @@ server.route({
                     "</ul>" +
                 "</li>" +
                 "<li>" + 
-                    "<h4>" + "POST /star/register" + "</h4>" +
+                    "<h4>" + "POST /block" + "</h4>" +
                     "<ul>" + 
                         "<li>" + 
                             "Register a star on the blockchain." +
@@ -58,12 +58,6 @@ server.route({
                                 "<li>" + "Returns a value in the form of {\"hash\": \"block_hash\", \"height\": 57, \"body\": { \"address\": \"BTC_wallet_address\", \"star\": { \"ra\": \"16h 29m 1.0s\", \"dec\": \"-26° 29' 24.9\", \"mag\": \"\", \"cen\": \"\", \"story\": \"story_encoded\", \"storyDecoded\": \"Found star using https://www.google.com/sky/\"}}, \"time\": \"1532296234\", \"previousBlockHash\": \"previous_hash\"}" + "</li>" +
                             "</ul>" +
                         "</li>" +
-                    "</ul>" +
-                "</li>" +
-                "<li>" + 
-                    "<h4>" + "POST /block" + "</h4>" +
-                    "<ul>" + 
-                        "<li>" + "Add a block to the chain, using the request's payload as the data to be stored in the new block." + "</li>" +
                     "</ul>" +
                 "</li>" +
                 "<li>" + 
@@ -342,10 +336,10 @@ server.route({
     }
 });
 
-// "/star/register" POST route to allow registering a star to the chain.
+// "/block" POST route to allow registering a star to the chain.
 server.route({
     method:'POST',
-    path:'/star/register',
+    path:'/block',
     config: {
         payload: {
             defaultContentType: 'application/json',
@@ -559,61 +553,6 @@ server.route({
         }
 
         //return(JSON.stringify(await blockchain.getBlock(request.params.b_num)));
-    }
-});
-
-// "/block" POST route to allow adding a block to the chain.
-server.route({
-    method:'POST',
-    path:'/block',
-    config: {
-        payload: {
-            //defaultContentType: 'text/plain'
-            parse: false
-            //allow: 'multipart/form-data',
-        }
-    },
-    handler: async function (request,h) {
-        // request.payload or request.rawPayload
-        // Input is a string, should return newly created block on success
-
-        try {
-            var blockchain = new chain.Blockchain();
-            await blockchain.init();
-        }
-        catch (err) {
-            console.log(err);
-            process.exit(1);
-        }
-
-        let height = await blockchain.getBlockHeight();
-        txt = request.payload.toString('utf8')
-
-        try {
-            var obj = JSON.parse(request.payload.toString('utf8'));
-        }
-        catch (err) {
-            const response = h.response("Invalid JSON data supplied!");
-            response.type('text/html; charset=utf-8');
-            response.header('Creator', 'cdchris12');
-            response.code(400);
-            return response;
-        }
-
-        if ('body' in obj && obj['body'] !== "") {
-            let newBlock = await blockchain.addBlock(new chain.Block(obj['body']));
-            const response = h.response(newBlock);
-            response.type('application/json; charset=utf-8');
-            response.header('Creator', 'cdchris12');
-            response.code(200);
-            return response;
-        } else {
-            const response = h.response("Invalid JSON data supplied!");
-            response.type('text/html; charset=utf-8');
-            response.header('Creator', 'cdchris12');
-            response.code(418);
-            return response;
-        }
     }
 });
 
