@@ -1,6 +1,7 @@
 const Hapi = require('hapi');
 const hex2ascii = require('hex2ascii');
 const WAValidator = require('wallet-address-validator');
+const validator = require('validator');
 backend = require('./levelSandbox');
 chain = require('./simpleChain');
 Mempool = require('./mempool');
@@ -375,10 +376,12 @@ server.route({
 
                 // Verify star data is seemingly valid
                 if (
-                    ("star" in obj) && 
+                    "star" in obj && 
                     ("dec" in obj["star"] && obj["star"]["dec"] != "") && 
                     ("ra" in obj["star"] && obj["star"]["ra"] != "") && 
-                    ("story" in obj["star"])
+                    "story" in obj["star"] && 
+                    validator.isAscii(obj.star.story) &&
+                    obj.star.story.length <= 250
                 ) {
                     // Valid star data
 

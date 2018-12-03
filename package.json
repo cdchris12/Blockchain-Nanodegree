@@ -17,6 +17,7 @@
     "bitcoinjs-lib": "^4.0.2",
     "bitcoinjs-message": "^2.0.0",
     "body-parser": "^1.18.3",
-    "wallet-address-validator": "^0.2.4"
+    "wallet-address-validator": "^0.2.4",
+    "validator": "^10.9.0"
   }
 }
